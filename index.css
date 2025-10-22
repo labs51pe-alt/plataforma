@@ -60,6 +60,39 @@ body {
   align-items: center;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-panel-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    color: var(--dark-text);
+    text-decoration: none;
+    border-radius: var(--border-radius-md);
+    transition: background-color var(--transition-speed), border-color var(--transition-speed);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.admin-panel-button:hover {
+    background-color: var(--primary-brown-light);
+    border-color: var(--border-color);
+}
+
+.admin-panel-button svg {
+    stroke-width: 2;
+    width: 20px;
+    height: 20px;
+}
+
 .cart-button {
   position: relative;
   background: none;
@@ -759,16 +792,6 @@ body {
     flex-wrap: wrap;
     gap: 1rem;
 }
-.admin-link {
-    color: var(--light-text);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color var(--transition-speed);
-}
-.admin-link:hover {
-    color: var(--dark-text);
-    text-decoration: underline;
-}
 
 
 @media (max-width: 768px) {
@@ -777,6 +800,12 @@ body {
     }
     .hero-overlay h1 {
         font-size: 2.2rem;
+    }
+    .admin-panel-button span {
+        display: none;
+    }
+    .admin-panel-button {
+        padding: 0.5rem;
     }
     .chat-window {
         width: calc(100% - 2rem);

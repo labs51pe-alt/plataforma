@@ -1,69 +1,11 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
-// FIX: import Chat for stateful conversations
-import { GoogleGenAI, GenerateContentResponse, Chat } from "@google/genai";
+import { GoogleGenAI, Chat } from "@google/genai";
 import { marked } from 'marked';
+import { getStoresData } from './data';
 
-// --- BASE DE DATOS SIMULADA DE TIENDAS ---
-// En una aplicación real, esto vendría de un backend/API.
-const storesData = {
-    sachacacao: {
-        id: 'sachacacao',
-        name: 'Sacha Cacao',
-        sectionTitle: 'Nuestra Cosecha',
-        theme: {
-            '--primary-brown': '#5D4037', '--primary-brown-light': '#efebe9', '--accent-gold': '#c59d5f',
-            '--dark-text': '#3E2723', '--light-text': '#795548', '--background-color': '#FDFBF7',
-            '--surface-color': '#FFFFFF', '--border-color': '#D7CCC8',
-        },
-        heroBanner: {
-            imageUrl: 'https://images.pexels.com/photos/4099355/pexels-photo-4099355.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-            title: 'Sacha Cacao',
-            subtitle: 'Del grano a tu corazón. Descubre el sabor auténtico del cacao artesanal.'
-        },
-        paymentInfo: {
-            phone: '987654321', name: 'JUAN PEREZ', whatsapp: '51987654321'
-        },
-        chatInstruction: "Eres un asistente virtual de Sacha Cacao, una tienda especializada en productos artesanales de cacao. Eres amable, conocedor y apasionado por el cacao. Ayuda a los clientes a conocer los productos, sus beneficios, y a realizar sus compras.",
-        products: [
-            { id: 1, name: 'Cacao en Polvo 100% Orgánico', description: 'Nuestro cacao en polvo puro es ideal para repostería, bebidas calientes o batidos. Sabor intenso y sin aditivos.', price: 85.00, image: 'https://images.pexels.com/photos/4109943/pexels-photo-4109943.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 2, name: 'Cacao Crudo Criollo x Kg', description: 'Granos de cacao criollo, la variedad más fina y aromática. Perfectos para tostar en casa o para chocolatería artesanal.', price: 50.00, image: 'https://images.pexels.com/photos/8977717/pexels-photo-8977717.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 3, name: 'Cacao Tostado en Grano', description: 'Granos de cacao tostados a la perfección para resaltar sus notas de sabor. Un snack energético y delicioso.', price: 70.00, image: 'https://images.pexels.com/photos/7350796/pexels-photo-7350796.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 4, name: 'Pasta Pura de Cacao x Kg', description: '100% cacao molido, la base para cualquier creación de chocolate. Sabor profundo y auténtico del grano.', price: 90.00, image: 'https://images.pexels.com/photos/6068997/pexels-photo-6068997.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 5, name: 'Nibs de Cacao Tostado', description: 'Trozos de granos de cacao tostado y pelado. Añade un toque crujiente y chocolatoso a tus desayunos y postres.', price: 90.00, image: 'https://images.pexels.com/photos/6112423/pexels-photo-6112423.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 6, name: 'Manjar de Cacao 150g', description: 'Deliciosa y untuosa crema de cacao artesanal, endulzada naturalmente. Perfecta para untar o disfrutar a cucharadas.', price: 15.00, image: 'https://images.pexels.com/photos/2067423/pexels-photo-2067423.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 7, name: 'Cascarilla de Cacao', description: 'La cáscara del grano de cacao, ideal para preparar una infusión aromática con notas a chocolate y propiedades relajantes.', price: 5.00, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Cocoa_bean_husks.jpg/640px-Cocoa_bean_husks.jpg' },
-            { id: 8, name: 'Cóctel de Cacao', description: 'Exquisito licor de cacao artesanal, perfecto para disfrutar solo, en cócteles o como un toque especial en postres.', price: 50.00, image: 'https://images.pexels.com/photos/2788775/pexels-photo-2788775.jpeg?auto=compress&cs=tinysrgb&w=600' }
-        ]
-    },
-    cafedelvalle: {
-        id: 'cafedelvalle',
-        name: 'Café del Valle',
-        sectionTitle: 'Nuestros Orígenes',
-        theme: {
-            '--primary-brown': '#4E342E', '--primary-brown-light': '#D7CCC8', '--accent-gold': '#FFC107',
-            '--dark-text': '#3E2723', '--light-text': '#6D4C41', '--background-color': '#FBF9F6',
-            '--surface-color': '#FFFFFF', '--border-color': '#BCAAA4',
-        },
-        heroBanner: {
-            imageUrl: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-            title: 'Café del Valle',
-            subtitle: 'El aroma que despierta tus sentidos.'
-        },
-        paymentInfo: {
-            phone: '999888777', name: 'MARIA GARCIA', whatsapp: '51999888777'
-        },
-        chatInstruction: "Eres un barista experto de Café del Valle, una tienda de café de especialidad. Conoces todo sobre el origen, tostado y métodos de preparación. Ayuda a los clientes a elegir el café perfecto para ellos.",
-        products: [
-            { id: 1, name: 'Café Geisha Tostado Medio', description: 'Notas florales de jazmín, bergamota y frutos tropicales. Acidez brillante y cuerpo sedoso.', price: 95.00, image: 'https://images.pexels.com/photos/4109744/pexels-photo-4109744.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 2, name: 'Café Bourbon Lavado x Kg', description: 'Un clásico balanceado con notas a chocolate, caramelo y nuez. Ideal para espresso o filtrado.', price: 60.00, image: 'https://images.pexels.com/photos/3733005/pexels-photo-3733005.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 3, name: 'Blend de la Casa', description: 'Mezcla perfecta de granos de la región para una taza consistente y llena de sabor. Perfil achocolatado.', price: 45.00, image: 'https://images.pexels.com/photos/14831349/pexels-photo-14831349.jpeg?auto=compress&cs=tinysrgb&w=600' },
-            { id: 4, name: 'Café de Origen Único (Honey)', description: 'Proceso honey que resalta el dulzor natural del grano. Notas a miel, frutos rojos y panela.', price: 75.00, image: 'https://images.pexels.com/photos/10708573/pexels-photo-10708573.jpeg?auto=compress&cs=tinysrgb&w=600' }
-        ]
-    }
-};
+const storesData = getStoresData();
 
 const getStoreConfig = () => {
     const params = new URLSearchParams(window.location.search);
@@ -107,7 +49,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         <h3 className="product-name">{product.name}</h3>
         <p className="product-description">{product.description}</p>
         <div className="product-footer">
-          <span className="product-price">S/ {product.price.toFixed(2)}</span>
+          <span className="product-price">S/ {Number(product.price).toFixed(2)}</span>
           <button className="add-to-cart-btn" onClick={() => onAddToCart(product)}>
             Añadir
           </button>
@@ -226,13 +168,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isChatOpen, toggleChat }) => {
     const [messages, setMessages] = useState<{ type: 'user' | 'model'; text: string }[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    // FIX: Use a ref for the Chat object to maintain conversation history
     const chat = useRef<Chat | null>(null);
     const chatBodyRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isChatOpen && !chat.current) {
-            // FIX: Initialize the AI and create a new chat session when the chat opens
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             chat.current = ai.chats.create({
               model: 'gemini-2.5-flash',
@@ -255,7 +195,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isChatOpen, toggleChat }) => {
         setInput('');
         setIsLoading(true);
         try {
-            // FIX: Use chat.sendMessage to send message with history
             const response = await chat.current.sendMessage({ message: messageToSend });
             const modelMessage = { type: 'model' as const, text: response.text };
             setMessages(prev => [...prev, modelMessage]);
@@ -281,7 +220,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isChatOpen, toggleChat }) => {
                     </div>
                     <div className="chat-body" ref={chatBodyRef}>
                         {messages.map((msg, index) => (
-                            // FIX: Cast the output of marked to a string to resolve the TypeScript error.
+                            // FIX: Cast the result of `marked()` to a string to satisfy the type requirements of `dangerouslySetInnerHTML`.
                             <div key={index} className={`chat-message ${msg.type}`} dangerouslySetInnerHTML={{ __html: msg.type === 'model' ? marked(msg.text) as string : msg.text }}></div>
                         ))}
                         {isLoading && (<div className="chat-message model"><div className="loading-dots"><span></span><span></span><span></span></div></div>)}
@@ -303,10 +242,16 @@ const Header: React.FC<{ onCartClick: () => void; cartCount: number }> = ({ onCa
     <header className="header">
       <div className="container">
         <StoreLogo name={storeConfig.name} />
-        <button className="cart-button" onClick={onCartClick} aria-label={`Ver carrito de compras con ${cartCount} artículos`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-          {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-        </button>
+        <div className="header-actions">
+          <a href="/admin.html" className="admin-panel-button" aria-label="Ir al panel de administración">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+            <span>Admin</span>
+          </a>
+          <button className="cart-button" onClick={onCartClick} aria-label={`Ver carrito de compras con ${cartCount} artículos`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+          </button>
+        </div>
       </div>
     </header>
   );
@@ -315,7 +260,7 @@ const Header: React.FC<{ onCartClick: () => void; cartCount: number }> = ({ onCa
 const HeroBanner: React.FC = () => {
     const { imageUrl, title, subtitle } = storeConfig.heroBanner;
     return (
-        <section className="hero-banner" style={{backgroundImage: `url('${imageUrl}')`}}>
+        <section className="hero-banner" style={{ backgroundImage: `url(${imageUrl})` }}>
             <div className="hero-overlay">
                 <div className="container">
                     <h1>{title}</h1>
@@ -326,75 +271,102 @@ const HeroBanner: React.FC = () => {
     );
 };
 
+
+const ProductGrid: React.FC<{ onAddToCart: (product: Product) => void }> = ({ onAddToCart }) => {
+  return (
+    <section className="product-grid-container">
+        <div className="container">
+            <h2 className="section-title">{storeConfig.sectionTitle}</h2>
+            <div className="product-grid">
+                {storeConfig.products.map(product => (
+                    <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+                ))}
+            </div>
+        </div>
+    </section>
+  );
+};
+
 const Footer: React.FC = () => {
     return (
         <footer className="footer">
             <div className="container">
-                <p>&copy; {new Date().getFullYear()} {storeConfig.name}. Todos los derechos reservados.</p>
-                <a href="/admin.html" className="admin-link">Administrar Tienda</a>
+                <span>© {new Date().getFullYear()} {storeConfig.name}. Todos los derechos reservados.</span>
             </div>
         </footer>
     );
 };
 
-const App: React.FC = () => {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+const App = () => {
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  useEffect(() => {
-    Object.entries(storeConfig.theme).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(key, value);
-    });
-    document.title = `${storeConfig.name} | Tienda Online`;
-  }, []);
+    // Dynamic theme application
+    useEffect(() => {
+        Object.entries(storeConfig.theme).forEach(([key, value]) => {
+            document.documentElement.style.setProperty(key, value);
+        });
+        document.title = `${storeConfig.name} | Tienda Online`;
+    }, []);
 
-  const handleAddToCart = (product: Product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prevCart, { ...product, quantity: 1 }];
-    });
-  };
-  
-  const handleUpdateQuantity = (productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) { handleRemoveItem(productId); return; }
-    setCart(cart => cart.map(item => item.id === productId ? {...item, quantity: newQuantity} : item));
-  }
-  const handleRemoveItem = (productId: number) => setCart(cart => cart.filter(item => item.id !== productId));
-  const handleClearCart = () => setCart([]);
-  const handleProceedToPayment = () => { setIsCartOpen(false); setIsPaymentModalOpen(true); };
-  const handleBackToCart = () => { setIsPaymentModalOpen(false); setIsCartOpen(true); };
-  const handleClosePaymentModal = () => setIsPaymentModalOpen(false);
+    const handleAddToCart = (product: Product) => {
+        setCart(prevCart => {
+            const existingItem = prevCart.find(item => item.id === product.id);
+            if (existingItem) {
+                return prevCart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+            }
+            return [...prevCart, { ...product, quantity: 1 }];
+        });
+        setIsCartOpen(true);
+    };
+    
+    const handleUpdateQuantity = (productId: number, newQuantity: number) => {
+        if (newQuantity < 1) {
+            handleRemoveItem(productId);
+        } else {
+            setCart(cart.map(item => item.id === productId ? { ...item, quantity: newQuantity } : item));
+        }
+    };
+    
+    const handleRemoveItem = (productId: number) => {
+        setCart(cart.filter(item => item.id !== productId));
+    };
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const handleClearCart = () => { setCart([]); };
+    const handleProceedToPayment = () => { setIsCartOpen(false); setIsPaymentOpen(true); };
+    const handleBackToCart = () => { setIsPaymentOpen(false); setIsCartOpen(true); };
 
-  return (
-    <>
-      <Header onCartClick={() => setIsCartOpen(true)} cartCount={cartCount} />
-      <main>
-        <HeroBanner />
-        <section className="product-grid-container">
-            <div className="container">
-                <h2 className="section-title">{storeConfig.sectionTitle}</h2>
-                <div className="product-grid">
-                    {storeConfig.products.map(product => (
-                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
-                    ))}
-                </div>
-            </div>
-        </section>
-      </main>
-      <Footer />
-      <CartModal cart={cart} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onUpdateQuantity={handleUpdateQuantity} onRemoveItem={handleRemoveItem} onClearCart={handleClearCart} onProceedToPayment={handleProceedToPayment} />
-      <PaymentModal isOpen={isPaymentModalOpen} onClose={handleClosePaymentModal} onBackToCart={handleBackToCart} total={total} cart={cart} />
-      <ChatWidget isChatOpen={isChatOpen} toggleChat={() => setIsChatOpen(!isChatOpen)} />
-    </>
-  );
+    return (
+        <div>
+            <Header onCartClick={() => setIsCartOpen(true)} cartCount={totalItems} />
+            <HeroBanner />
+            <main>
+                <ProductGrid onAddToCart={handleAddToCart} />
+            </main>
+            <Footer />
+            <CartModal 
+                cart={cart}
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemoveItem={handleRemoveItem}
+                onClearCart={handleClearCart}
+                onProceedToPayment={handleProceedToPayment}
+            />
+             <PaymentModal
+                isOpen={isPaymentOpen}
+                onClose={() => setIsPaymentOpen(false)}
+                onBackToCart={handleBackToCart}
+                total={totalAmount}
+                cart={cart}
+            />
+            <ChatWidget isChatOpen={isChatOpen} toggleChat={() => setIsChatOpen(!isChatOpen)} />
+        </div>
+    );
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
