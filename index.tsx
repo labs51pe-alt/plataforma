@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleGenAI, Chat } from "@google/genai";
@@ -220,8 +221,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ isChatOpen, toggleChat }) => {
                     </div>
                     <div className="chat-body" ref={chatBodyRef}>
                         {messages.map((msg, index) => (
-                            // FIX: Cast the result of `marked()` to a string to satisfy the type requirements of `dangerouslySetInnerHTML`.
-                            <div key={index} className={`chat-message ${msg.type}`} dangerouslySetInnerHTML={{ __html: msg.type === 'model' ? marked(msg.text) as string : msg.text }}></div>
+                            // FIX: Use `marked.parse()` for synchronous markdown rendering, as `marked()` is asynchronous.
+                            <div key={index} className={`chat-message ${msg.type}`} dangerouslySetInnerHTML={{ __html: msg.type === 'model' ? marked.parse(msg.text) : msg.text }}></div>
                         ))}
                         {isLoading && (<div className="chat-message model"><div className="loading-dots"><span></span><span></span><span></span></div></div>)}
                     </div>

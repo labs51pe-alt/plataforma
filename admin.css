@@ -64,6 +64,17 @@ body {
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 0.8rem;
 }
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.section-header h2 {
+    margin: 0;
+    border: none;
+    padding: 0;
+}
 
 .form-group {
     margin-bottom: 1rem;
@@ -131,19 +142,26 @@ body {
 
 .product-editor {
     display: flex;
+    align-items: center;
     gap: 1.5rem;
     padding: 1.5rem 0;
     border-bottom: 1px solid #e2e8f0;
 }
 .product-editor:last-child {
     border-bottom: none;
+    padding-bottom: 0;
 }
+.product-editor:first-of-type {
+    padding-top: 0;
+}
+
 .product-editor img {
     width: 100px;
     height: 100px;
     object-fit: cover;
     border-radius: 8px;
     flex-shrink: 0;
+    background-color: #f4f7f9;
 }
 .product-fields {
     flex-grow: 1;
@@ -152,20 +170,55 @@ body {
     gap: 0.75rem;
 }
 
+.add-product-btn {
+    padding: 0.5rem 1rem;
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.add-product-btn:hover {
+    background-color: #2b6cb0;
+}
+
+.delete-product-btn {
+    background: none;
+    border: 1px solid #e2e8f0;
+    color: #718096;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.delete-product-btn:hover {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+    color: #ef4444;
+}
+
 .save-button {
     width: 100%;
     padding: 1rem;
     font-size: 1.1rem;
     font-weight: 700;
     color: #fff;
-    background-color: #3182ce;
+    background-color: #2f855a;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s;
+    margin-top: 1rem;
 }
 .save-button:hover {
-    background-color: #2b6cb0;
+    background-color: #276749;
 }
 
 .notification {
